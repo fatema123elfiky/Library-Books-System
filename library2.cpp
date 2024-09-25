@@ -230,6 +230,22 @@ int main()
 
         }
         else if(choice=="2"){// return a book
+             cout<<"Which Book you want to return ?\n";
+             library::view_lib(borrow,2);
+             cout<<"Enter your choice : ";string choose;
+             again3:
+             cin>>choose;
+             if(!numeric(choose)){
+                 cout<<"Please Enter a valid choice : ";
+                 goto again3;
+             }
+             if(stoi(choose)<1||stoi(choose)>borrow.size()){
+                 cout<<"Please Enter a valid choice : \n";
+                 goto again3;
+             }
+             books.push_back(borrow[stoi(choose)-1]);
+             borrow.erase(stoi(choose)-1+borrow.begin());
+             cout<<"Return operation is done successfully :) \n";
 
         }
         else if(choice=="3"){// borrow
@@ -250,8 +266,8 @@ int main()
             }
             //rest of the code
             borrow.push_back(books[stoi(choose)-1]);
-            delete books[stoi(choose)-1];
             books.erase(stoi(choose)-1+books.begin());
+            cout<<"Borrow operation is done successfully :) \n";
 
         }
         else if(choice=="4"){// view book info
