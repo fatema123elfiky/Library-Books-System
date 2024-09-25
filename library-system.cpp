@@ -225,6 +225,25 @@ vector<library*>borrow;
 
         }
         else if(choice=="3"){// borrow
+           cout<<"Which Book you want to borrow ?\n";
+            for (int i = 0; i < books.size(); ++i) {
+                cout<<i+1<<"."<<books[i]->name_book()<<'\n';
+            }
+            cout<<"Enter your choice : ";
+            string choose;
+            again2:
+            cin>>choose;
+            if(!numeric(choose)) {
+                cout<<"Please Enter a valid choice : ";
+                goto again2;
+            }
+            if (stoi(choose)<1||stoi(choose)>books.size()){
+                cout<<"Please Enter a valid choice : ";
+                goto again2;
+            }
+            borrow.push_back(books[stoi(choose)-1]);
+           delete books[stoi(choose)-1];
+            books.erase(stoi(choose)-1+books.begin());
 
         }
         else if(choice=="4"){// view book info
