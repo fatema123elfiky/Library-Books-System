@@ -25,6 +25,13 @@ bool numeric(string s){
     }
     return true;
 }
+bool person(string s){
+    for(auto ch :s){
+        if(isdigit(ch))
+            return false;
+    }
+    return true;
+}
 
 
 
@@ -37,18 +44,21 @@ protected:
     static int counter;
 public:
     virtual void book_info()=0;
-    void set_value(string n, string des,string edi,string writer,int price,bool type ){
-        this->name=n;this->description=des;
-        this->editor=edi;this->writer=writer;
-        this->price=price;this->type=type;
-        counter++;
+    friend istream& operator>>(istream& in, library& e);
+    bool operator== ( library & l );
+    ~library(){
+        counter--;
     }
-     friend istream& operator>>(istream& in, library& e);
+    static void view_lib(const vector<library*> & v,bool target) ;
+    string name_book(){
+     return name;
+    }
 };
 
 int library::counter=0;
 
 class EBook:public library{
+public:
     void book_info() override{
         cout<<"Name : "<<name<<'\n'
         <<"Type : E-book"<<'\n'
@@ -56,10 +66,14 @@ class EBook:public library{
         <<"Writer : "<<writer<<'\n'
         <<"Price : "<<price<<'\n'<<"Description : "<<description<<"\n\n";
     }
-    friend istream& operator>>(istream& in, EBook& e);
+      EBook() {
+        type=true;
+     counter++;
+    }
 };
 
 class PrintedBook:public library{
+public:
     void book_info() override{
         cout<<"Name : "<<name<<'\n'
             <<"Type : Printed-book"<<'\n'
@@ -67,82 +81,110 @@ class PrintedBook:public library{
             <<"Writer : "<<writer<<'\n'
             <<"Price : "<<price<<'\n'<<"Description : "<<description<<"\n\n";
     }
-    friend istream& operator>>(istream& in, PrintedBook& p);
+    PrintedBook(){
+        type=false;
+        counter++;
+    }
 };
 //functions of some  classes
 istream& operator>>(istream& in, library& e){
-    cout<<"Enter the name : ";cin>>e.name;cin.get();
-    cout<<"Enter the description : "; getline(cin,e.description);
-    cin.get();
-    cout<<"Enter the editor name : ";cin>>e.editor;
-    while (numeric(e.editor)){
+    in.ignore();
+    cout<<"Enter the name : ";getline(in,e.name) ;//in.ignore();
+    cout<<"Enter the description : "; getline(in,e.description);
+
+    cout<<"Enter the editor name : ";getline(in,e.editor);
+    while (!person(e.editor)){
         cout<<"Enter a valid name : ";
-        cin>>e.editor;
+        getline(in,e.editor);
     }
-    cout<<"Enter the writer name : ";cin>>e.writer;
-    while (numeric(e.writer)){
+    cout<<"Enter the writer name : ";getline(in,e.writer);
+    while (!person(e.writer)){
         cout<<"Enter a valid name : ";
-        cin>>e.writer;
+        getline(in,e.writer) ;
     }
     string price;
-    cout<<"Enter the price : ";cin>>price;
+    cout<<"Enter the price : ";getline(in,price);
     while (!numeric(price)){
-        cout<<"Enter a valid price : ";cin>>price;
+        cout<<"Enter a valid price : ";getline(in,price);
     }
     e.price=stoi(price);
-e.type= true;
+    return  in;
+
 }
 
-/*istream& operator>>(istream& in, PrintedBook& p){
-    cout<<"Enter the name : ";cin>>p.name;
-    cin.get();
-    cout<<"Enter the description : "; getline(cin,p.description);
-    cin.get();
-    cout<<"Enter the editor name : ";cin>>p.editor;
-    while (numeric(p.editor)){
-        cout<<"Enter a valid name : ";
-        cin>>p.editor;
-    }
-    cout<<"Enter the writer name : ";cin>>p.writer;
-    while (numeric(p.writer)){
-        cout<<"Enter a valid name : ";
-        cin>>p.writer;
-    }
-    string price;
-    cout<<"Enter the price : ";cin>>price;
-    while (!numeric(price)){
-        cout<<"Enter a valid price : ";cin>>price;
-    }
-    p.price=stoi(price);
-    p.type= false;
+bool library:: operator== ( library&  l){
+return (l.type==type&&l.name==name&&l.price==price&&l.writer==writer&&l.editor==editor&&
+  l.description==description);
 
-}*/
+}
+
+void library::view_lib(const vector<library*> & v,bool target) {
+    int cntr=1;
+    cout<<"\n\n==============================\n\n";
+     for (int i = 0; i < v.size(); ++i) {
+         if(v[i]->type==target){
+             cout<<cntr<<"."<<v[i]->name<<'\n';
+             cntr++;
+         }
+     }
+     if(cntr==1)
+         cout<<"The library now is empty of that type :(\n";
+    cout<<"\n\n==============================\n\n";
+    return ;
+}
+
 
 
 
 
 int main()
 {
-    /*freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);*/
 
-            cout<<"\n\n\n                    ############ Welcome to The library system ############ \n\n\n";
+cout<<"\n\n\n                    ############ Welcome to The library system ############ \n\n\n";
 vector<library *>books;// carry the info of the library
+vector<library*>borrow;
     while (true){
         cout<<"##### The Menu #####\n\n";
-        cout<<"1.Add a book\n2.Return a book\n";
+        cout<<"1.Add a book\n";
+        if(!borrow.empty()){
+            cout<<"2.Return a book\n"; }
         if(!books.empty()){
             cout<<"3.Borrow a book\n4.View a book's info\n5.View the library's info\n";
         }
         cout<<"6.Exit\n";
         cout<<"Please choose from the menu : ";
         string choice;cin>>choice;
-        while (choice!="1"&&choice!="2"&&choice!="3"&&choice!="4"&&choice!="5"&&choice!="6"){
-            cout<<"Please Enter a valid choice : ";
-            cin>>choice;
+        //validation part
+        if(!books.empty()){
+            if(!borrow.empty()){
+                while (choice != "1" && choice != "2" && choice != "3" && choice != "4" && choice != "5" &&
+                       choice != "6") {
+                    cout << "Please Enter a valid choice : ";
+                    cin >> choice;
+                }
+            }else{
+                while (choice != "1"  && choice != "3" && choice != "4" && choice != "5" &&
+                       choice != "6") {
+                    cout << "Please Enter a valid choice : ";
+                    cin >> choice;
+                }
+
+            }
+        }else{
+            if(borrow.empty()){
+                while (choice != "1" && choice != "6") {
+                    cout << "Please Enter a valid choice : ";
+                    cin >> choice;
+                }
+            }else{
+                while (choice != "1"&&choice!="2" && choice != "6") {
+                    cout << "Please Enter a valid choice : ";
+                    cin >> choice;
+                }
+            }
         }
         if(choice=="1"){//add a book
-
+            repeat:
            string type;
             cout<<"Choose from the following the type of the book :\n1.E-Book\n2.Printed-Book\n\n";
             cout<<"Enter the choice : ";cin>>type;
@@ -153,22 +195,71 @@ vector<library *>books;// carry the info of the library
             if(type=="1")
             {
                 library * e= new EBook() ; cin>> *e;
+                for (int i = 0; i < books.size(); ++i) {
+
+                    if(*(books[i])==*e){
+                      cout<<"This book is already in the library!\n "
+                            "Please Enter a new book\n\n";
+                      delete e;
+                     goto repeat;
+
+                    }
+                }
                 books.push_back(e);
             }
             else {
-                library * p;cin>>*p;
+                library * p=new PrintedBook();cin>>*p;
+                for (int i = 0; i < books.size(); ++i) {
+                    if(*(books[i])==*p){
+                        cout<<"This book is already in the library!\n "
+                              "Please Enter a new book\n\n";
+                       delete p;
+                        goto repeat;
+                    }
+                }
                 books.push_back(p);
             }
 
-        }else if(choice=="2"){// return a book
+        }
+        else if(choice=="2"){// return a book
 
-        }else if(choice=="3"){// borrow
+        }
+        else if(choice=="3"){// borrow
 
-        }else if(choice=="4"){// view book info
-
-        }else if(choice=="5"){//view the library info
-
-        }else{// close
+        }
+        else if(choice=="4"){// view book info
+         cout<<"Which Book do you Want ?\n\n";
+            for (int i = 0; i < books.size(); ++i) {
+                cout<<i+1<<"."<<books[i]->name_book()<<'\n';
+            }
+            cout<<"Enter your choice : ";
+            again:
+            string choose;cin>>choose;
+            if(!numeric(choose)) {
+                cout<<"Please Enter a valid choice : ";
+                goto again;
+            }
+           if (stoi(choose)<1||stoi(choose)>books.size()){
+                cout<<"Please Enter a valid choice : ";
+                goto again;
+            }
+            books[stoi(choose)-1]->book_info();
+        }
+        else if(choice=="5"){//view the library info
+          cout<<"Which section you want to see ?\n1.E-books\n2.Printed-books\nEnter your choice : ";
+          string choose;cin>>choose;
+          //validation part
+            while (choose!="1"&& choose!="2"){
+                cout<<"Please Enter a valid choice : ";cin>>choose;
+            }
+            //implementation part
+            if(choose=="1"){
+                library::view_lib(books,true);
+            }else{
+               library::view_lib(books,false);
+            }
+        }
+        else{// close
             cout<<"\n\n      ######## Thanks for using that system :) ######## \n\n";
             break;
         }
